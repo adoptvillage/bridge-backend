@@ -12,10 +12,10 @@ def validate_user_signup_data(data: Dict[str, str]):
     
     if len(data['password']) < 6:
         return {"message": "Password length is too short."}, 403
-    
+
     if type(data["role"]) is not int:
         return {"message": "Type mismatch of role."}
-    
+
     if "@" not in data['email']:
         return {"message": "Email is invalid."}, 403
     
