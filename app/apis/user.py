@@ -28,6 +28,16 @@ class UserRegister(Resource):
         name = data['name']
         email = data['email']
         password = data['password']
+        role = data['role']
+        role_name = ""
+        
+        if role == 0:
+            role_name = "donor"
+        elif role == 1:
+            role_name = "recipient"
+        elif role == 2:
+            role_name = "moderator" 
+
          
         try:    
             user = auth.create_user(
@@ -72,8 +82,15 @@ class UserSignIn(Resource):
         API_KEY = os.getenv('API_KEY')
         url = 'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=' + API_KEY
         res = requests.post(url, data=json_string)
+
+        json_res = json.loads(res.text)
+        if "idToken" in json_res.keys():
+            json_res["role"] = 0
         
-        return json.loads(res.text), 200
+        
+        
+        return json_res, 200
+
 
 
 # @user_ns.route('/resetpassword')

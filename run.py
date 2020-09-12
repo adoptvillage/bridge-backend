@@ -5,7 +5,8 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from flask_sqlalchemy import SQLAlchemy
 import os
-import pyrebase
+
+
 
 def create_app(config_filename: str) -> Flask:
     
