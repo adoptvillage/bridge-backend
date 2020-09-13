@@ -84,9 +84,6 @@ class UserSignIn(Resource):
         res = requests.post(url, data=json_string)
         json_res = json.loads(res.text)
         
-        exception = json_res
-        error_message = exception["error"]
-        print(error_message["message"])
         
         if "error" in json_res.keys():
             error_message = json_res["error"]
