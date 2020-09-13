@@ -129,3 +129,5 @@ dmypy.json
 .pyre/
 
 # firebase_credentials.json
+#remove database sample file
+/sample.py

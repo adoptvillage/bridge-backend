@@ -7,7 +7,7 @@ from firebase_admin import auth
 import app.utils.messages as messages
 from app.apis.validate.user_validate import validate_user_signup_data
 from app.apis.models.user import add_models_to_namespace
-from app.apis.models.user import login_user_model, register_user_model
+from app.apis.models.user import *
 import os
 
 user_ns = Namespace('user', description='Functions related to user')
