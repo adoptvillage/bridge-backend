@@ -82,12 +82,18 @@ class UserSignIn(Resource):
         API_KEY = os.getenv('API_KEY')
         url = 'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=' + API_KEY
         res = requests.post(url, data=json_string)
-
         json_res = json.loads(res.text)
+        
+        
+        if "error" in json_res.keys():
+            error_message = json_res["error"]
+            if error_message["message"] == "INVALID_PASSWORD":
+                return {"message": "Password is incorrect"}, 401
+            else:
+                return { "message": error_message["message"]}, 401    
+            
         if "idToken" in json_res.keys():
             json_res["role"] = 0
-        
-        
         
         return json_res, 200
 
