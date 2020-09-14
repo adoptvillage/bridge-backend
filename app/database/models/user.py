@@ -20,22 +20,29 @@ class UserModel(db.Model):
     is_recipient = db.Column(db.Boolean)
     is_moderator = db.Column(db.Boolean)
     
-    def __init__(self, name, email, password, role):
+    def __init__(self, firebase_id, name, email, password, role):
 
         self.name = name
         self.email = email
-        
+        self.firebase_id = firebase_id
         # saving hash of password
         self.set_password(password)
 
         # Setting role of a user
         if role == 0:
             self.is_donor = True
+            self.is_recipient = False
+            self.is_moderator = False
         elif role == 1:
+            self.is_donor = False
             self.is_recipient = True
+            self.is_moderator = False
         elif role == 2:
+            self.is_donor = False
+            self.is_recipient = False
             self.is_moderator = True
             
+        self.is_email_verified = False
 
 
     def json(self):
@@ -45,7 +52,7 @@ class UserModel(db.Model):
                 "firebase_id": self.firebase_id,
                 "name": self.name,
                 "email": self.email,
-                "is_email_verified": is_email_verified,
+                "is_email_verified": self.is_email_verified,
                 "profile_image": self.profile_image,
                 "occupation": self.occupation,
                 "is_donor": self.is_donor,
@@ -53,6 +60,21 @@ class UserModel(db.Model):
                 "is_moderator": self.is_moderator,
             }
             
+    
+    @classmethod
+    def find_by_email(cls, email: str) -> 'UserModel':
+        return cls.query.filter_by(email=email).first()
+    
+    @classmethod        
+    def find_by_id(cls, _id: int) -> 'UserModel':
+        '''Returns user of given id.'''
+        return cls.query.filter_by(id=_id).first()
+    
+    @classmethod        
+    def find_by_firebase_id(cls, firebase_id: str) -> 'UserModel':
+        '''Returns user of given firebase_id.'''
+        return cls.query.filter_by(firebase_id=firebase_id).first()
+    
     def set_password(self, password_plain_text: str) -> None:
         """Sets user password"""
         self.password_hash = generate_password_hash(password_plain_text)
@@ -60,11 +82,6 @@ class UserModel(db.Model):
     def check_password(self, password_plain_text: str) -> bool:
         """Returns a boolean if password is the same as it's hash."""
         return check_password_hash(self.password_hash, password_plain_text)
-
-            
-    def find_by_id(cls, _id: int) -> 'UserModel':
-        '''Returns user of given id.'''
-        return cls.query.filter_by(id=_id).first()
     
     def save_to_db(self) -> None:
         '''Add user to database'''
