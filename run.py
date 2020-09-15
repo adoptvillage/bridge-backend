@@ -4,7 +4,7 @@ from config import get_env_config
 import firebase_admin
 from firebase_admin import credentials, firestore
 from flask_sqlalchemy import SQLAlchemy
-import os
+from dotenv import load_dotenv
 
 
 
@@ -15,7 +15,7 @@ def create_app(config_filename: str) -> Flask:
     app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///local_data.db"
     app.url_map.strict_slashes = False
     
-    
+    load_dotenv()
     # config = {
     #     "apiKey": os.getenv("API_KEY"),
     #     "authDomain": "bridge-3f39b.firebaseapp.com",

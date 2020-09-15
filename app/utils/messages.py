@@ -1,11 +1,8 @@
 EMAIL_ALREADY_EXISTS = {
     "message": "Account with this email is already exists"
 }
-USER_WAS_CREATED_SUCCESSFULLY = {
-    "message": "User was created successfully."
-    "A confirmation email has been sent via"
-    " email. After confirming your email you "
-    "can login."
+USER_CREATED = {
+    "message": "User was created successfully. Please check your email to verify the account"
 }
 
 USER_DELETED = {"message": "User Deleted"}

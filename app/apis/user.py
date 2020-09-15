@@ -8,6 +8,8 @@ import app.utils.messages as messages
 from app.apis.validate.user_validate import validate_user_signup_data
 from app.apis.models.user import add_models_to_namespace
 from app.apis.models.user import *
+from app.database.dao.user import UserDAO
+from app.utils.view_decorator import token_required
 import os
 
 user_ns = Namespace('user', description='Functions related to user')
@@ -16,89 +18,72 @@ add_models_to_namespace(user_ns)
 @user_ns.route('/register')
 class UserRegister(Resource):
     
+    @user_ns.response(201, "%s" % (
+        {"message" : "User was created successfully. Please check your email to verify the account"}
+    ))
+    @user_ns.response(400, "%s" % (
+        {"message" : "user already exists"}
+    ))
     @user_ns.expect(register_user_model)
     def post(self):
         
         data = request.json
+        
         not_valid = validate_user_signup_data(data)
         
         if not_valid:
             return not_valid
         
-        name = data['name']
-        email = data['email']
-        password = data['password']
-        role = data['role']
-        role_name = ""
-        
-        if role == 0:
-            role_name = "donor"
-        elif role == 1:
-            role_name = "recipient"
-        elif role == 2:
-            role_name = "moderator" 
-
-         
-        try:    
-            user = auth.create_user(
-                email=email,
-                email_verified=False,
-                password=password,
-                display_name=name,
-                disabled=False
-                )
-            
-            link = auth.generate_email_verification_link(email, action_code_settings=None)
-            print(link)
-            ''' To implement, send verification link usingg # send_verification_link(email,link) '''
-            
-        except Exception as e:
-            return {"message": str(e)}, 400
-        
-        return {"verify_link": link,
-                "message" : "Please check your email to verify the account"
-                }, 200
+        result = UserDAO.create_user(data)
+        return result
             
 
 @user_ns.route('/login')
 class UserSignIn(Resource):
     
+    @user_ns.response(200, "User logged in successfully", login_response_model)
+    @user_ns.response(400, "%s" % (
+        {"message": "password is incorrect"}
+    ))
     @user_ns.expect(login_user_model)
     def post(self):
         data = request.json
         email = data['email']
         password = data['password']
         
+        login_response = UserDAO.authenticate(email, password)
+        return login_response
+
+
+@user_ns.route("/profile")
+class ListMembers(Resource):
+    
+    @user_ns.doc(params={'authorization': {'in': 'header', 'description': 'An authorization token'}})
+    @user_ns.response(200, "Profile Data", profile_body)
+    @user_ns.response(400, "%s\n%s\n%s\n%s" % (
+        messages.TOKEN_EXPIRED,
+        messages.TOKEN_INVALID,
+        messages.TOKEN_REVOKED,
+        {"message": "cannot find account"}
+    ),
+    )
+    @token_required
+    def get(self):
+        token = request.headers['authorization']
+        
+        decoded_token = auth.verify_id_token(token)
+        uid = decoded_token['uid']
+        
         try:
-            user = auth.get_user_by_email(email)
-            if user.email_verified != True:
-                return {"message": "Email is not verified, Please verify email first"}, 400
-        
+            user = UserDAO.get_profile(uid)
         except Exception as e:
-            return {"message": e.args[0]}, 400
-        
-        
-        json_string = {"email":email,"password":password,"returnSecureToken":True}
-        API_KEY = os.getenv('API_KEY')
-        url = 'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=' + API_KEY
-        res = requests.post(url, data=json_string)
-        json_res = json.loads(res.text)
-        
-        
-        if "error" in json_res.keys():
-            error_message = json_res["error"]
-            if error_message["message"] == "INVALID_PASSWORD":
-                return {"message": "Password is incorrect"}, 401
-            else:
-                return { "message": error_message["message"]}, 401    
+            return {"message": "cannot find account"}, 400
             
-        if "idToken" in json_res.keys():
-            json_res["role"] = 0
+        return user, 200
         
-        return json_res, 200
-
-
-
+        
+        
+        
 # @user_ns.route('/resetpassword')
 # class ResetPassword(Resource):
     
