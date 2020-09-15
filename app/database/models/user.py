@@ -19,6 +19,8 @@ class UserModel(db.Model):
     is_donor = db.Column(db.Boolean)
     is_recipient = db.Column(db.Boolean)
     is_moderator = db.Column(db.Boolean)
+    address = db.Column(db.Text())
+    location = db.Column(db.Text())
     
     def __init__(self, firebase_id, name, email, password, role):
 
@@ -54,6 +56,8 @@ class UserModel(db.Model):
                 "email": self.email,
                 "is_email_verified": self.is_email_verified,
                 "profile_image": self.profile_image,
+                "address": self.address,
+                "location": self.location,
                 "occupation": self.occupation,
                 "is_donor": self.is_donor,
                 "is_recipient": self.is_recipient,
