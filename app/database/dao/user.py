@@ -7,6 +7,7 @@ from firebase_admin import auth
 from app.apis.validate.user_validate import validate_user_signup_data
 from typing import Dict
 from os import environ
+from app.database.sqlalchemy_extension import db
 
 
 class UserDAO:
@@ -101,3 +102,18 @@ class UserDAO:
     def get_profile(firebase_id: str):
         user_profile = UserModel.find_by_firebase_id(firebase_id)
         return user_profile.json()
+    
+    @staticmethod
+    def update_profile(firebase_id: str, data: Dict[str, str]):
+        user_profile = UserModel.find_by_firebase_id(firebase_id)
+        if "name" in data:
+            user_profile.name = data["name"]
+        if "address" in data:
+            user_profile.address = data["address"]
+        if "location" in data:
+            user_profile.location = data["location"]
+        if "occupation" in data:
+            user_profile.occupation = data["occupation"]
+        db.session.commit()
+        
+        return messages.PROFILE_UPDATE_SUCCESSFULLY, 200

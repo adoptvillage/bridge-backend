@@ -80,8 +80,30 @@ class ListMembers(Resource):
             return {"message": "cannot find account"}, 400
             
         return user, 200
+    
+    
+    @user_ns.doc(params={'authorization': {'in': 'header', 'description': 'An authorization token'}})
+    @user_ns.response(200, "%s" % (messages.PROFILE_UPDATE_SUCCESSFULLY))
+    @user_ns.response(400, "%s\n%s\n%s\n%s" % (
+        messages.TOKEN_EXPIRED,
+        messages.TOKEN_INVALID,
+        messages.TOKEN_REVOKED,
+        {"message": "cannot find account"}
+    ),
+    )
+    @user_ns.expect(update_profile_body)
+    @token_required
+    def put(self):
+        data = request.json
+        token = request.headers['authorization']
+        decoded_token = auth.verify_id_token(token)
+        uid = decoded_token['uid']
         
-        
+        try:
+            user = UserDAO.update_profile(uid, data)
+            
+        except Exception as e:
+            return {"message": str(e)}, 400
         
         
 # @user_ns.route('/resetpassword')

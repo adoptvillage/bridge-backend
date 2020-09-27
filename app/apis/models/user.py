@@ -5,7 +5,8 @@ def add_models_to_namespace(api_namespace):
     api_namespace.models[login_user_model.name] = login_user_model
     api_namespace.models[profile_body.name] = profile_body
     api_namespace.models[login_response_model.name] = login_response_model
-
+    api_namespace.models[update_profile_body.name] = update_profile_body
+    
 login_user_model = Model(
     "login User Model",
     {
@@ -61,5 +62,19 @@ profile_body = Model(
         ),
         "is_moderator": fields.Boolean(required=True, description="If the owner is mooderator"
         )
+    }
+)
+
+update_profile_body = Model(
+    "Get profile of a user",
+    {   
+        
+        "name": fields.String(required=False, description="The name of the user"),
+        "address": fields.String(required=False, description="The address of the user"),
+        "location": fields.String(required=False, description="The location of the user"),
+        "occupation": fields.String(
+            required=False, description="Occupation of User"
+        ),
+        
     }
 )

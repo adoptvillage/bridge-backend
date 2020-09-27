@@ -29,3 +29,7 @@ TOKEN_INVALID = {
 RESET_LINK_SENT = {
     "message": "Reset link is successfully sent to you email address"
 }
+
+PROFILE_UPDATE_SUCCESSFULLY = {
+    "message": "Profile updated successfully"
+}
