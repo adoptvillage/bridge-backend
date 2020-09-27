@@ -7,6 +7,8 @@ from firebase_admin import auth
 from app.apis.validate.user_validate import validate_user_signup_data
 from typing import Dict
 from os import environ
+from app.database.sqlalchemy_extension import db
+
 
 
 class UserDAO:
@@ -61,10 +63,11 @@ class UserDAO:
             user = auth.get_user_by_email(email)
             if user.email_verified != True:
                 return {"message": "Email is not verified, Please verify email first"}, 400
+
             else:
                 local_user = UserModel.find_by_email(email)
                 local_user.is_email_verified = True
-        
+
         except Exception as e:
             return {"message": e.args[0]}, 400
         
@@ -86,13 +89,8 @@ class UserDAO:
         
         if "idToken" in json_res.keys():
             '''Sample response of role i.e. 0'''
-            user_data = UserModel.find_by_email(email)
-            if user_data.is_donor:
-                json_res["role"] = 0
-            elif user_data.is_recipient:
-                json_res["role"] = 1
-            elif user_data.is_moderator:
-                json_res["role"] = 2
+            json_res["role"] = 3
+
             
         
         return json_res, 200
@@ -110,3 +108,23 @@ class UserDAO:
     def get_profile(firebase_id: str):
         user_profile = UserModel.find_by_firebase_id(firebase_id)
         return user_profile.json()
+    
+    @staticmethod
+    def update_profile(firebase_id: str, data: Dict[str, str]):
+        user_profile = UserModel.find_by_firebase_id(firebase_id)
+        if "name" in data:
+            user_profile.name = data["name"]
+        if "address" in data:
+            user_profile.address = data["address"]
+        if "location" in data:
+            user_profile.location = data["location"]
+        if "occupation" in data:
+            user_profile.occupation = data["occupation"]
+        
+        try:
+            db.session.commit()
+        except Exception as e:
+            return {"message": e.args[0]}, 400
+        
+        
+        return messages.PROFILE_UPDATE_SUCCESSFULLY, 200
