@@ -10,6 +10,7 @@ from os import environ
 from app.database.sqlalchemy_extension import db
 
 
+
 class UserDAO:
     """Data Access Object for User"""
 
@@ -62,7 +63,11 @@ class UserDAO:
             user = auth.get_user_by_email(email)
             if user.email_verified != True:
                 return {"message": "Email is not verified, Please verify email first"}, 400
-            
+
+            else:
+                local_user = UserModel.find_by_email(email)
+                local_user.is_email_verified = True
+
         except Exception as e:
             return {"message": e.args[0]}, 400
         
@@ -85,6 +90,7 @@ class UserDAO:
         if "idToken" in json_res.keys():
             '''Sample response of role i.e. 0'''
             json_res["role"] = 3
+
             
         
         return json_res, 200

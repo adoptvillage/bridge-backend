@@ -98,13 +98,14 @@ class ListMembers(Resource):
         token = request.headers['authorization']
         decoded_token = auth.verify_id_token(token)
         uid = decoded_token['uid']
-        
+
         try:
             user = UserDAO.update_profile(uid, data)
             
         except Exception as e:
             return {"message": str(e)}, 400
         
+
         
 # @user_ns.route('/resetpassword')
 # class ResetPassword(Resource):
