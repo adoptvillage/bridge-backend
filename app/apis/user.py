@@ -100,11 +100,12 @@ class ListMembers(Resource):
         uid = decoded_token['uid']
 
         try:
-            user = UserDAO.update_profile(uid, data)
+            user_updated_response = UserDAO.update_profile(uid, data)
             
         except Exception as e:
             return {"message": str(e)}, 400
         
+        return user_updated_response
 
         
 # @user_ns.route('/resetpassword')

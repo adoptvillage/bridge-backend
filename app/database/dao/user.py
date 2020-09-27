@@ -120,6 +120,11 @@ class UserDAO:
             user_profile.location = data["location"]
         if "occupation" in data:
             user_profile.occupation = data["occupation"]
-        db.session.commit()
+        
+        try:
+            db.session.commit()
+        except Exception as e:
+            return {"message": e.args[0]}, 400
+        
         
         return messages.PROFILE_UPDATE_SUCCESSFULLY, 200
