@@ -33,3 +33,5 @@ RESET_LINK_SENT = {
 PROFILE_UPDATE_SUCCESSFULLY = {
     "message": "Profile updated successfully"
 }
+
+CANNOT_FIND_USER = {"message": "Cannot find user"}

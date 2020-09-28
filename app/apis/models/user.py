@@ -6,6 +6,7 @@ def add_models_to_namespace(api_namespace):
     api_namespace.models[profile_body.name] = profile_body
     api_namespace.models[login_response_model.name] = login_response_model
     api_namespace.models[update_profile_body.name] = update_profile_body
+    api_namespace.models[update_preferred_location_body.name] = update_preferred_location_body
     
 login_user_model = Model(
     "login User Model",
@@ -74,6 +75,20 @@ update_profile_body = Model(
         "location": fields.String(required=False, description="The location of the user"),
         "occupation": fields.String(
             required=False, description="Occupation of User"
+        ),
+        
+    }
+)
+
+update_preferred_location_body = Model(
+    "Update preferred location of donor",
+    {   
+        
+        "state": fields.String(required=True, description="Selected state"),
+        "district": fields.String(required=True, description="Selected district"),
+        "sub_district": fields.String(required=False, description="Selected Sub District"),
+        "area": fields.String(
+            required=False, description="Selected area"
         ),
         
     }

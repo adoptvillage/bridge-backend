@@ -8,6 +8,7 @@ from app.apis.validate.user_validate import validate_user_signup_data
 from typing import Dict
 from os import environ
 from app.database.sqlalchemy_extension import db
+from app.database.models.preferred_location import PreferredLocationModel
 
 
 
@@ -128,3 +129,29 @@ class UserDAO:
         
         
         return messages.PROFILE_UPDATE_SUCCESSFULLY, 200
+    
+    @staticmethod
+    def update_preferred_location(firebase_id: str, data: Dict[str, str]):
+        state = data['state']
+        district = data['district']
+        if "sub_district" in data:
+            sub_district = data["sub_district"]
+        else:
+            sub_district = ""
+        if "area" in data:
+            area = data["area"]
+        else:
+            area = ""
+        try:
+            user = UserModel.find_by_firebase_id(firebase_id)
+        
+        except Exception as e:
+            return messages.CANNOT_FIND_USER, 400
+        
+        if user.is_donor:
+            updated_location = PreferredLocationModel(user.id, state, district, sub_district, area)
+            updated_location.save_to_db()
+            return {"message": "Preferred location updated successfully"}, 200
+        else:
+            return {"message": "This user cannot set preferred location"}, 401
+            
