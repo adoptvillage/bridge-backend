@@ -56,7 +56,7 @@ class UserSignIn(Resource):
 
 
 @user_ns.route("/profile")
-class ListMembers(Resource):
+class UserProfile(Resource):
     
     @user_ns.doc(params={'authorization': {'in': 'header', 'description': 'An authorization token'}})
     @user_ns.response(200, "Profile Data", profile_body)
@@ -107,7 +107,33 @@ class ListMembers(Resource):
         
         return user_updated_response
 
+@user_ns.route('/updatelocation')
+class UserUpdateLocation(Resource):
+    
+    @user_ns.doc(params={'authorization': {'in': 'header', 'description': 'An authorization token'}})
+    @user_ns.response(200, "%s" % ({"message":"Preferred location updated successfully"}))
+    @user_ns.response(400, "%s" % (
+        {"message": "Cannot update preferred location"}
+    ))
+    @user_ns.response(401, "%s" % (
+        {"message": "This user cannot set preferred location"}
+    ))
+    @user_ns.expect(update_preferred_location_body)
+    def post(self):
+        data = request.json
+        token = request.headers['authorization']
         
+        decoded_token = auth.verify_id_token(token)
+        uid = decoded_token['uid']
+        
+        try:
+            update_preferred_location_response = UserDAO.update_preferred_location(uid, data)
+        except Exception as e:
+            return {"message": str(e)}, 400
+        
+        return update_preferred_location_response
+
+
 # @user_ns.route('/resetpassword')
 # class ResetPassword(Resource):
     
