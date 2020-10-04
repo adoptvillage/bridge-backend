@@ -1,5 +1,7 @@
 from flask import request, Response
 from app.database.models.user import UserModel
+from app.database.models.invites import InvitesModel
+from app.database.models.invites import InvitesModel
 import requests
 import json
 from app.utils import messages
@@ -9,6 +11,7 @@ from typing import Dict
 from os import environ
 from app.database.sqlalchemy_extension import db
 from app.database.models.preferred_location import PreferredLocationModel
+import random
 
 
 
@@ -23,7 +26,23 @@ class UserDAO:
         email = data['email']
         password = data['password']
         role = data['role']
+        
+        existing_user = UserModel.find_by_email(email.lower())
+        if existing_user:
+            return {"message": "User already exists"}, 400
+        
+        if role == 2:
+            if "otp" in data:
+                invitation = InvitesModel.find_by_mod_email(email.lower())
+                if invitation:
+                    if data["otp"] != invitation.unique_code:
+                        return {"message": "OTP is incorrect"}, 401  
+                else:
+                    return {"message": "Sorry! Invite is needed to be a moderator"}, 400
+            else:
+                return {"message": "Please send OTP"}, 400
 
+        print("Passed")
         
         try:    
             user = auth.create_user(
@@ -48,8 +67,6 @@ class UserDAO:
             user.save_to_db()
         except Exception as e:
             print(e)
-        
-        
         
 
         return {"verify_link": link,
@@ -160,3 +177,27 @@ class UserDAO:
         else:
             return {"message": "This user cannot set preferred location"}, 401
             
+    @staticmethod
+    def send_invite_to_mod(firebase_id: str, email: str):
+        mod_email = email
+        
+        try:
+            user = UserModel.find_by_firebase_id(firebase_id)
+        except Exception as e:
+            return messages.CANNOT_FIND_USER, 400
+        
+        if user.is_donor:
+            mod_exists = UserModel.find_by_email(mod_email)
+            if mod_exists:
+                if mod_exists.is_moderator:
+                    return {"message": f"Moderator is already registered. Do you want to proceed?"}, 409
+                else:
+                    role = "donor" if mod_exists.is_donor else "recipient" if mod_exists.is_recipient else "moderator"
+                    return {"message": f"User with this email is already signed up as a {role}"}, 400
+            else:
+                otp = random.randint(1111,9999)
+                invite = InvitesModel(user, email, otp)
+                invite.save_to_db()
+                
+        else:
+            return {"message": "User cannot invite moderator"}, 401
