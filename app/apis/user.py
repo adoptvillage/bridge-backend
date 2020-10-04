@@ -133,6 +133,29 @@ class UserUpdateLocation(Resource):
         
         return update_preferred_location_response
 
+@user_ns.route('/invite/moderator')
+class InviteModerator(Resource):
+    
+    @user_ns.doc(params={'authorization': {'in': 'header', 'description': 'An authorization token'}})
+    @user_ns.doc(params={'email': 'Email of moderator'})
+    def post(self):
+        
+        token = request.headers['authorization']
+        decoded_token = auth.verify_id_token(token)
+        uid = decoded_token['uid']
+        args = request.args
+        
+        if "email" in args:
+            mod_email = args.get("email")
+        else:
+            return {"message": "Please add email address of moderator"}, 400
+        
+        try:
+            send_mod_invite = UserDAO.send_invite_to_mod(uid, mod_email)
+        except Exception as e:
+            return {"message": str(e)}, 400
+        
+        return send_mod_invite
 
 # @user_ns.route('/resetpassword')
 # class ResetPassword(Resource):

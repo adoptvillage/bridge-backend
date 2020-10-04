@@ -20,11 +20,21 @@ class InvitesModel(db.Model):
     moderator_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     moderator = db.relationship(
         UserModel,
-        backref="invites",
+        backref="getModInvite",
         primaryjoin="InvitesModel.moderator_id == UserModel.id",
     )
     invitee_email = db.Column(db.String(100))
     unique_code = db.Column(db.String(10))
+    
+    def __init__(self, donor, invitee_email, unique_code):
+        self.invitee_email = invitee_email
+        self.unique_code = unique_code
+        self.donor = donor
+    
+    
+    @classmethod
+    def find_by_mod_email(cls, invitee_email: str) -> 'InvitesModel':
+        return cls.query.filter_by(invitee_email=invitee_email).first()
     
     def save_to_db(self) -> None:
         '''Add invite details to database'''
