@@ -67,7 +67,12 @@ class UserDAO:
 
             else:
                 local_user = UserModel.find_by_email(email)
-                local_user.is_email_verified = True
+                if local_user.is_email_verified:
+                    pass
+                else:
+                    local_user.is_email_verified = True
+                    db.session.commit()
+                
 
         except Exception as e:
             return {"message": e.args[0]}, 400
