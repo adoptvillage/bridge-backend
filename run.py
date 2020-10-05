@@ -7,6 +7,9 @@ from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 from app.database.models.user import UserModel
 from app.database.models.preferred_location import PreferredLocationModel
+from dotenv import load_dotenv, find_dotenv
+from os import environ
+from flask_mail import Mail
  
 
 
@@ -19,7 +22,18 @@ def create_app(config_filename: str) -> Flask:
 
     app.url_map.strict_slashes = False
     
-    load_dotenv()
+    load_dotenv(find_dotenv())
+    
+    mail_settings = {
+    "MAIL_SERVER": 'smtp.gmail.com',
+    "MAIL_PORT": 465,
+    "MAIL_USE_TLS": False,
+    "MAIL_USE_SSL": True,
+    "MAIL_USERNAME": environ.get('EMAIL_USER'),
+    "MAIL_PASSWORD": environ.get('EMAIL_PASS')
+    }
+    
+    app.config.update(mail_settings)
     
     from app.database.sqlalchemy_extension import db
     db.init_app(app)
@@ -38,6 +52,9 @@ def create_app(config_filename: str) -> Flask:
     
     from app.apis import api
     api.init_app(app)
+    
+    from app.utils.mail_extension import mail
+    mail.init_app(app)
     
     
     # from app.database.firebase import firebase_db
