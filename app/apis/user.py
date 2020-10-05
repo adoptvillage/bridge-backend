@@ -119,6 +119,7 @@ class UserUpdateLocation(Resource):
         {"message": "This user cannot set preferred location"}
     ))
     @user_ns.expect(update_preferred_location_body)
+    @token_required
     def post(self):
         data = request.json
         token = request.headers['authorization']
@@ -138,6 +139,7 @@ class InviteModerator(Resource):
     
     @user_ns.doc(params={'authorization': {'in': 'header', 'description': 'An authorization token'}})
     @user_ns.doc(params={'email': 'Email of moderator'})
+    @token_required
     def post(self):
         
         token = request.headers['authorization']
@@ -157,6 +159,23 @@ class InviteModerator(Resource):
         
         return send_mod_invite
 
+@user_ns.route('/dashboard')
+class UserDashboard(Resource):
+    
+    @user_ns.doc(params={'authorization': {'in': 'header', 'description': 'An authorization token'}})
+    @token_required
+    def get(self):
+        
+        token = request.headers['authorization']
+        decoded_token = auth.verify_id_token(token)
+        uid = decoded_token['uid']
+        
+        dsahboard_response = UserDAO.dashboard(uid)
+        
+        return dsahboard_response
+        
+        
+    
 # @user_ns.route('/resetpassword')
 # class ResetPassword(Resource):
     

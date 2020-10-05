@@ -201,3 +201,14 @@ class UserDAO:
                 
         else:
             return {"message": "User cannot invite moderator"}, 401
+
+    @staticmethod
+    def dashboard(firebase_id: str):
+        try:
+            user = UserModel.find_by_firebase_id(firebase_id)
+        except Exception as e:
+            return messages.CANNOT_FIND_USER, 400
+        
+        role = "donor" if user.is_donor else "recipient" if user.is_recipient else "moderator"
+        
+        return {"message": role}, 200
