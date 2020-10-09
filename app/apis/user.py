@@ -107,7 +107,7 @@ class UserProfile(Resource):
         
         return user_updated_response
 
-@user_ns.route('/updatelocation')
+@user_ns.route('/preferredlocation')
 class UserUpdateLocation(Resource):
     
     @user_ns.doc(params={'authorization': {'in': 'header', 'description': 'An authorization token'}})
@@ -133,11 +133,40 @@ class UserUpdateLocation(Resource):
             return {"message": str(e)}, 400
         
         return update_preferred_location_response
+    
+    
+    @user_ns.doc(params={'authorization': {'in': 'header', 'description': 'An authorization token'}})    
+    @token_required
+    @user_ns.response(400, "%s\n%s" % (
+        {"message": "Cannot find preferred location"},
+        {"message": "User is not a donor. Cannot set preferred location"}
+    ))
+    @user_ns.response(200, "Preferred Location Data", preferred_location_body)
+    
+    def get(self):
+        token = request.headers['authorization']
+        
+        decoded_token = auth.verify_id_token(token)
+        uid = decoded_token['uid']
+        
+        try:
+            preferred_location_response = UserDAO.get_preferred_location(uid)
+        except Exception as e:
+            return {"message": str(e)}, 400
+        
+        return preferred_location_response
+        
 
 @user_ns.route('/invite/moderator')
 class InviteModerator(Resource):
     
     @user_ns.doc(params={'authorization': {'in': 'header', 'description': 'An authorization token'}})
+    @user_ns.response(400, "%s\n%s\n%s\n%s" % (
+        {"message": "Moderator is already registered. Do you want to proceed?"},
+        {"message": "User with this email is already signed up as a recipient/donor"},
+        {"message": "Invitation sent"},
+        {"message": "User cannot invite moderator"}
+    ))
     @user_ns.doc(params={'email': 'Email of moderator'})
     @token_required
     def post(self):
