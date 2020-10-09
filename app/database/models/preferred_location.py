@@ -12,6 +12,7 @@ class PreferredLocationModel(db.Model):
     user = db.relationship(
         UserModel,
         backref="preferred_location",
+        uselist=False,
         primaryjoin="PreferredLocationModel.user_id == UserModel.id",
     )
     state = db.Column(db.String(50))
@@ -25,6 +26,20 @@ class PreferredLocationModel(db.Model):
         self.district = district
         self.sub_district = sub_district
         self.area = area
+        
+    def json(self):
+        '''Preferred Location object in json format.'''
+        return {
+            "state": self.state,
+            "district": self.district,
+            "sub_district": self.sub_district,
+            "area": self.area
+            }
+    
+    @classmethod        
+    def find_by_user_id(cls, _user_id: int) -> 'PreferredLocationModel':
+        '''Returns user preferred location of given user id.'''
+        return cls.query.filter_by(user_id=_user_id).first()
     
     def save_to_db(self) -> None:
         """Saves the model to the database."""

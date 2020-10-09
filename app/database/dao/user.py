@@ -131,7 +131,7 @@ class UserDAO:
     @staticmethod
     def get_profile(firebase_id: str):
         user_profile = UserModel.find_by_firebase_id(firebase_id)
-        return user_profile.json()
+        return user_profile.json(), 200
     
     @staticmethod
     def update_profile(firebase_id: str, data: Dict[str, str]):
@@ -172,11 +172,39 @@ class UserDAO:
             return messages.CANNOT_FIND_USER, 400
         
         if user.is_donor:
-            updated_location = PreferredLocationModel(user.id, state, district, sub_district, area)
-            updated_location.save_to_db()
+            preferred_location = PreferredLocationModel.find_by_user_id(user.id)
+            if preferred_location:
+                preferred_location.state = state
+                preferred_location.district = district
+                preferred_location.sub_district = sub_district
+                preferred_location.area = area
+                preferred_location.save_to_db()
+            else:
+                updated_location = PreferredLocationModel(user.id, state, district, sub_district, area)
+                updated_location.save_to_db()
             return {"message": "Preferred location updated successfully"}, 200
         else:
             return {"message": "This user cannot set preferred location"}, 401
+    
+    @staticmethod
+    def get_preferred_location(firebase_id: str):
+        try:
+            user = UserModel.find_by_firebase_id(firebase_id)
+        
+        except Exception as e:
+            return messages.CANNOT_FIND_USER, 400
+        
+        if user.is_donor:
+            preferred_location = PreferredLocationModel.find_by_user_id(user.id)
+            print(preferred_location)
+            if preferred_location:
+                return preferred_location.json(), 200
+            else:
+                return {"message": "Cannot find preferred location"}, 400
+        
+        return {"message": "User is not a donor. Cannot set preferred location"}, 400
+        
+        
             
     @staticmethod
     def send_invite_to_mod(firebase_id: str, email: str):
