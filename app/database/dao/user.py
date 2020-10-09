@@ -12,7 +12,7 @@ from os import environ
 from app.database.sqlalchemy_extension import db
 from app.database.models.preferred_location import PreferredLocationModel
 import random
-
+from app.utils.email_utils import send_email_verification_message, send_invite_mod_email
 
 
 class UserDAO:
@@ -67,7 +67,8 @@ class UserDAO:
             user.save_to_db()
         except Exception as e:
             print(e)
-        
+            
+        send_email_verification_message(link, email)
 
         return {"verify_link": link,
                 "message" : "User was created successfully. Please check your email to verify the account"
@@ -198,6 +199,8 @@ class UserDAO:
                 otp = random.randint(1111,9999)
                 invite = InvitesModel(user, email, otp)
                 invite.save_to_db()
+                send_invite_mod_email(user.name, otp, email)
+                return {"message": "Invitation sent"}, 200
                 
         else:
             return {"message": "User cannot invite moderator"}, 401
