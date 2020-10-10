@@ -131,7 +131,7 @@ class UserDAO:
     @staticmethod
     def get_profile(firebase_id: str):
         user_profile = UserModel.find_by_firebase_id(firebase_id)
-        return user_profile.json(), 200
+        return user_profile.json()
     
     @staticmethod
     def update_profile(firebase_id: str, data: Dict[str, str]):
