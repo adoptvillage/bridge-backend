@@ -28,19 +28,22 @@ class UserDAO:
         role = data['role']
         
         existing_user = UserModel.find_by_email(email.lower())
-        if existing_user:
+        if existing_user and existing_user.firebase_id != "":
             return {"message": "User already exists"}, 400
+        
+        if existing_user and existing_user.firebase_id == "" and role != 2:
+            return {"message": "User is invited as a moderator. Please sign up as a moderator with unique code"}, 400
         
         if role == 2:
             if "otp" in data:
                 invitation = InvitesModel.find_by_mod_email(email.lower())
                 if invitation:
                     if data["otp"] != invitation.unique_code:
-                        return {"message": "OTP is incorrect"}, 401  
+                        return {"message": "Code is incorrect"}, 401  
                 else:
                     return {"message": "Sorry! Invite is needed to be a moderator"}, 400
             else:
-                return {"message": "Please send OTP"}, 400
+                return {"message": "Please send unique code"}, 400
 
         print("Passed")
         
@@ -63,8 +66,17 @@ class UserDAO:
             firebase_details = auth.get_user_by_email(email)
             uid = firebase_details.uid
             firebase_email = firebase_details.email
-            user = UserModel(uid, name, firebase_email, password, role)
-            user.save_to_db()
+            
+            ''' Existing user is a temporary moderator user '''
+            if existing_user:
+                existing_user.firebase_id = uid
+                existing_user.name = name
+                existing_user.email = firebase_email
+                existing_user.save_to_db()
+            else:
+                user = UserModel(uid, name, firebase_email, password, role)
+                user.save_to_db()
+            
         except Exception as e:
             print(e)
             
@@ -131,7 +143,7 @@ class UserDAO:
     @staticmethod
     def get_profile(firebase_id: str):
         user_profile = UserModel.find_by_firebase_id(firebase_id)
-        return user_profile.json(), 200
+        return user_profile.json()
     
     @staticmethod
     def update_profile(firebase_id: str, data: Dict[str, str]):
@@ -172,7 +184,7 @@ class UserDAO:
             return messages.CANNOT_FIND_USER, 400
         
         if user.is_donor:
-            preferred_location = PreferredLocationModel.find_by_user_id(user.id)
+            preferred_location = user.preferred_location
             if preferred_location:
                 preferred_location.state = state
                 preferred_location.district = district
@@ -224,7 +236,7 @@ class UserDAO:
                     role = "donor" if mod_exists.is_donor else "recipient" if mod_exists.is_recipient else "moderator"
                     return {"message": f"User with this email is already signed up as a {role}"}, 400
             else:
-                otp = random.randint(1111,9999)
+                otp = random.randint(111111,999999)
                 invite = InvitesModel(user, email, otp)
                 invite.save_to_db()
                 send_invite_mod_email(user.name, otp, email)

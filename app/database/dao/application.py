@@ -2,6 +2,7 @@ from flask import request, Response
 from app.database.models.user import UserModel
 from app.database.models.application import ApplicationModel
 from app.database.models.documents import DocumentsModel
+from app.database.models.invites import InvitesModel
 from app.database.models.institution import InstitutionModel
 import requests
 import json
@@ -12,6 +13,8 @@ from typing import Dict
 from os import environ
 from app.database.sqlalchemy_extension import db
 from app.database.models.preferred_location import PreferredLocationModel
+from app.utils.email_utils import send_invite_mod_email
+import random
 
 
 class ApplicationDAO:
@@ -24,7 +27,7 @@ class ApplicationDAO:
         user_application = user.application
         
         if user.is_recipient == False:
-            return {"message": "This user cannot submit application"}, 400
+            return {"message": "This user cannot submit application"}, 403
         
         # data = request.json
         ''' Personal information '''
@@ -69,20 +72,92 @@ class ApplicationDAO:
                                        aadhaar_number, state, district, sub_district, 
                                        area, year_or_semester, course_name, amount)
         application.applicant = user
-        application.save_to_db()
         
         
         documents = DocumentsModel(offer_letter, fee_structure, bank_statement)
         documents.application = application
         documents.save_to_db()
         
-        institute = InstitutionModel(institute_name, institute_state, institute_district, institution_affiliation_code)
-        institute.save_to_db()
+        application.insittute = InstitutionModel(institute_name, institute_state, institute_district, institution_affiliation_code)
+        application.save_to_db()
+        # institute = InstitutionModel(institute_name, institute_state, institute_district, institution_affiliation_code)
+        # institute.save_to_db()
         
         
         # already_exist_application = ApplicationModel.query.filter_by(name='reza')
         
         return {"message": "Success! Application submitted"}, 200
         
+    @staticmethod
+    def accept_application(firebase_id: str, data: Dict[str, str]):
+        try:
+            user = UserModel.find_by_firebase_id(firebase_id)
+        except Exception as e:
+            return messages.CANNOT_FIND_USER, 400
         
+        if user.is_donor == False:
+            return {"message": "This user cannot accept application"}, 403
+        
+        application_id = data["application_id"]
+        donating_full_amount = data["donating_full_amount"]
+        amount = data["amount"]
+        moderator_email = data["moderator_email"]
+        
+        application = ApplicationModel.find_by_id(application_id)
+        
+        if application in user.donating:
+            return {"message": "Already donating to this application"}, 409
+        
+        if application.remaining_amount == 0:
+            return {"message": "No further amount needed"}, 409
+        
+        if donating_full_amount:
+            application.remaining_amount = 0
+        else:
+            application.remaining_amount = application.remaining_amount - amount
+        
+        application.donor.append(user)
+        application.no_of_donors = application.no_of_donors + 1
+        
+        
+        ''' Find existing moderator '''
+        moderator = UserModel.find_by_email(moderator_email.lower())
+        
+        if moderator:
+            if moderator.is_moderator:
+                application.moderator.append(moderator)
+                application.moderator_email = moderator.email
+                application.save_to_db()
+                if moderator.firebase_id == "":
+                    return {"message": "Application accepted. Moderator is already invited, please ask moderator to register by code given earlier."}, 200
+                else:
+                    return {"message": "Application accepted"}, 200
+            else:
+                role = "donor" if moderator.is_donor else "recipient" if moderator.is_recipient else "moderator"
+                return {"message": f"Invited Moderator is register as a {role}"}, 409
+        else:
+            temp_mod_user = UserModel("","",moderator_email.lower(), "",2)
+            temp_mod_user.save_to_db()
+            application.moderator.append(temp_mod_user)
+            application.save_to_db()
+            ''' Send invite to moderator '''
+            invite_code = random.randint(111111,999999)
+            invite = InvitesModel(user, temp_mod_user, moderator_email, invite_code)
+            invite.save_to_db()
+            send_invite_mod_email(user.name, invite_code, moderator_email)
+            
+            return {"message": "Application accepted. Waiting for moderator to accept the inivite"}, 200
+            
+        
+        return {"message": "Application accepted"}, 200
+    
+    
+    @staticmethod
+    def list_application():
+        applications = ApplicationModel.query.all()
+        apps = list()
+        for app in applications:
+            apps.append(app.json())
+        return {"message": apps}, 200
+            
         

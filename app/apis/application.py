@@ -36,3 +36,31 @@ class SubmitApplication(Resource):
         submit_application_response = ApplicationDAO.create_application(uid, data)
         
         return submit_application_response
+    
+@app_ns.route('/accept')
+class AcceptApplication(Resource):
+    
+    @app_ns.doc(params={'authorization': {'in': 'header', 'description': 'An authorization token'}})
+    @token_required
+    @app_ns.expect(application_accept_model)
+    def post(self):
+        data = request.json
+        
+        token = request.headers['authorization']
+        
+        decoded_token = auth.verify_id_token(token)
+        uid = decoded_token['uid']
+        
+        accept_application_response = ApplicationDAO.accept_application(uid, data)
+        
+        return accept_application_response
+
+@app_ns.route('/')
+class AcceptApplication(Resource):
+    
+    def get(self):
+        
+        
+        list_application_response = ApplicationDAO.list_application()
+        
+        return list_application_response

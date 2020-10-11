@@ -2,6 +2,7 @@ from flask_restplus import fields, Model
 
 def add_models_to_namespace(api_namespace):
     api_namespace.models[application_submit_model.name] = application_submit_model
+    api_namespace.models[application_accept_model.name] = application_accept_model
     
 application_submit_model = Model(
     "Submit Application",
@@ -34,7 +35,7 @@ application_submit_model = Model(
         ),
         "year_or_semester": fields.String(required=True, description="Year or semester"
         ),
-        "amount": fields.String(required=True, description="Amount needed for donation"
+        "amount": fields.Integer(required=True, description="Amount needed for donation"
         ),
         "offer_letter": fields.String(required=True, description="Link of offer letter"
         ),
@@ -42,5 +43,15 @@ application_submit_model = Model(
         ),
         "bank_statement": fields.String(required=True, description="Link of bank statement"
         )
+    }
+)
+
+application_accept_model = Model(
+    "Accept Application",
+    {   
+        "application_id": fields.Integer(required=True, description="Application ID"),
+        "donating_full_amount": fields.Boolean(required=True, description="Whether or not donating full amount"),
+        "amount": fields.Integer(required=True, description="Amount to be donated"),
+        "moderator_email": fields.String(required=True, description="Moderator email address")
     }
 )

@@ -11,8 +11,7 @@ class PreferredLocationModel(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     user = db.relationship(
         UserModel,
-        backref="preferred_location",
-        uselist=False,
+        backref=db.backref('preferred_location', uselist = False),
         primaryjoin="PreferredLocationModel.user_id == UserModel.id",
     )
     state = db.Column(db.String(50))
