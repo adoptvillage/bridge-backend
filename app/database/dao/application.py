@@ -71,7 +71,7 @@ class ApplicationDAO:
         
         application = ApplicationModel(applicant_first_name, applicant_last_name, contact_number, 
                                        aadhaar_number, state, district, sub_district, 
-                                       area, year_or_semester, course_name, amount)
+                                       area, year_or_semester, course_name, int(amount))
         application.applicant = user
         
         
