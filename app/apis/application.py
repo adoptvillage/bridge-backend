@@ -58,6 +58,8 @@ class AcceptApplication(Resource):
 @app_ns.route('/')
 class AcceptApplication(Resource):
     
+    @app_ns.doc(params={'authorization': {'in': 'header', 'description': 'An authorization token'}})
+    @token_required
     def get(self):
         
         
