@@ -1,12 +1,14 @@
 from app.database.sqlalchemy_extension import db
 from app.database.models.user import UserModel
+from app.database.models.application import ApplicationModel
 
 
 
-class InvitesModel(db.Model):
+
+class ModeratorRequestModel(db.Model):
     
     # Specifying table
-    __tablename__ = "invites"
+    __tablename__ = "moderator_request"
     __table_args__ = {"extend_existing": True}
     
     
@@ -14,23 +16,22 @@ class InvitesModel(db.Model):
     donor_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     donor = db.relationship(
         UserModel,
-        backref="invites",
-        primaryjoin="InvitesModel.donor_id == UserModel.id",
+        backref="moderator_request",
+        primaryjoin="ModeratorRequestModel.donor_id == UserModel.id",
     )
-    moderator_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    moderator = db.relationship(
-        UserModel,
-        backref="getModInvite",
-        primaryjoin="InvitesModel.moderator_id == UserModel.id",
+    application_id = db.Column(db.Integer, db.ForeignKey("application.id"))
+    application = db.relationship(
+        ApplicationModel,
+        backref="moderator_request",
+        primaryjoin="ModeratorRequestModel.application_id == ApplicationModel.id",
     )
-    invitee_email = db.Column(db.String(100))
-    unique_code = db.Column(db.String(10))
+    accepted = db.Column(db.Boolean)
+    mod_email = db.Column(db.String(70))
     
-    def __init__(self, donor, moderator, invitee_email, unique_code):
+    def __init__(self, donor, invitee_email, unique_code):
         self.invitee_email = invitee_email
         self.unique_code = unique_code
         self.donor = donor
-        self.moderator = moderator
     
     
     @classmethod

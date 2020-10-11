@@ -17,7 +17,7 @@ def create_app(config_filename: str) -> Flask:
     
     app = Flask(__name__)
     
-    # app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///local_data.db"
+    # app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///local_data1.db"
     app.config['SQLALCHEMY_DATABASE_URI'] = "postgres://vzickxcv:g41uZicGDbvPcoQX_xoQVnztvkL0jL7o@john.db.elephantsql.com:5432/vzickxcv"
 
     app.url_map.strict_slashes = False
