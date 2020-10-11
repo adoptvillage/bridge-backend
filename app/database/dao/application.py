@@ -155,9 +155,9 @@ class ApplicationDAO:
     @staticmethod
     def list_application():
         applications = ApplicationModel.query.all()
-        apps = list()
+        all_applications = []
         for app in applications:
-            apps.append(app.json())
-        return {"message": apps}, 200
+            all_applications.append(app.json())
+        return all_applications, 200
             
         
