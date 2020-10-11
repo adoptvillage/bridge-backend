@@ -29,6 +29,8 @@ application_submit_model = Model(
         ),
         "institute_district": fields.String(required=True, description="Institution district"
         ),
+        "institute_type": fields.Integer(required=True, description="0 means school and 1 means college/university"
+        ),
         "institution_affiliation_code": fields.String(required=True, description="Institution affiliation code"
         ),
         "course_name": fields.String(required=True, description="Course name"

@@ -54,6 +54,7 @@ class ApplicationDAO:
         offer_letter = data["offer_letter"]
         fee_structure = data["fee_structure"]
         bank_statement = data["bank_statement"]
+        institute_type = data["institute_type"]
         
         if user_application:
             if any(application.is_open == True for application in user_application):
@@ -77,8 +78,7 @@ class ApplicationDAO:
         documents = DocumentsModel(offer_letter, fee_structure, bank_statement)
         documents.application = application
         documents.save_to_db()
-        
-        application.insittute = InstitutionModel(institute_name, institute_state, institute_district, institution_affiliation_code)
+        application.insittute = InstitutionModel(institute_name,institute_type, institute_state, institute_district, institution_affiliation_code)
         application.save_to_db()
         # institute = InstitutionModel(institute_name, institute_state, institute_district, institution_affiliation_code)
         # institute.save_to_db()
