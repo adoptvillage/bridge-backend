@@ -18,7 +18,7 @@ class ApplicationModel(db.Model):
     applicant_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     applicant = db.relationship(
         UserModel,
-        backref=db.backref('application', uselist = False),
+        backref='application',
         primaryjoin="ApplicationModel.applicant_id == UserModel.id",
     )
     applicant_first_name = db.Column(db.String(50)) 
