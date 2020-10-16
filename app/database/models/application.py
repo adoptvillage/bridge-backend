@@ -98,7 +98,9 @@ class ApplicationModel(db.Model):
             "institute": self.insittute.name,
             "remaining_amount": self.remaining_amount,
             "no_of_donors": self.no_of_donors,
-            "description": self.description
+            "description": self.description,
+            "institute_state": self.insittute.state,
+            "institute_district": self.insittute.district
         }
     @classmethod
     def find_by_moderator_email(cls, moderator_email: str) -> 'ApplicationModel':
