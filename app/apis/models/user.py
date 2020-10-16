@@ -53,7 +53,8 @@ register_user_model = Model(
         "name": fields.String(required=True, description="Name of user"),
         "email": fields.String(required=True, description="Email of user"),
         "password": fields.String(required=True, description="password of user"),
-        "role": fields.Integer(required=True, description="Role of a user")
+        "role": fields.Integer(required=True, description="Role of a user"),
+        "otp": fields.String(required=True, description="Unique invitation code for moderator signup only")
     }
 )
 

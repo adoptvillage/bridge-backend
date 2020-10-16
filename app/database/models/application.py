@@ -43,6 +43,8 @@ class ApplicationModel(db.Model):
         primaryjoin="ApplicationModel.institute_id == InstitutionModel.id",
     )
     
+    description = db.Column(db.Text())
+    
     is_open = db.Column(db.Boolean)
     verified = db.Column(db.Boolean)
     submission_date = db.Column(db.String(20))
@@ -62,7 +64,8 @@ class ApplicationModel(db.Model):
                  area,
                  year_or_semester,
                  course_name,
-                 amount
+                 amount,
+                 description
                  ):
         self.applicant_first_name = applicant_first_name
         self.applicant_last_name = applicant_last_name
@@ -81,6 +84,7 @@ class ApplicationModel(db.Model):
         self.verified = False
         self.submission_date = str(date.today())
         self.expiration_date = str(date.today() + timedelta(days=60))
+        self.description = description
         
     def json(self):
         return {
@@ -93,7 +97,8 @@ class ApplicationModel(db.Model):
             "area": self.area,
             "institute": self.insittute.name,
             "remaining_amount": self.remaining_amount,
-            "no_of_donors": self.no_of_donors
+            "no_of_donors": self.no_of_donors,
+            "description": self.description
         }
     @classmethod
     def find_by_moderator_email(cls, moderator_email: str) -> 'ApplicationModel':

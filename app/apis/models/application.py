@@ -39,6 +39,8 @@ application_submit_model = Model(
         ),
         "amount": fields.Integer(required=True, description="Amount needed for donation"
         ),
+        "description": fields.String(required=True, description="Description of why they need money"
+        ),
         "offer_letter": fields.String(required=True, description="Link of offer letter"
         ),
         "fee_structure": fields.String(required=True, description="Link of fee structure"
