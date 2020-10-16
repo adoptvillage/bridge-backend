@@ -39,6 +39,7 @@ class ApplicationDAO:
         district = data["district"]
         sub_district = data["sub_district"]
         area = data["area"]
+        description = data["description"]
         
         
         ''' Institution details '''
@@ -71,7 +72,7 @@ class ApplicationDAO:
         
         application = ApplicationModel(applicant_first_name, applicant_last_name, contact_number, 
                                        aadhaar_number, state, district, sub_district, 
-                                       area, year_or_semester, course_name, int(amount))
+                                       area, year_or_semester, course_name, int(amount), description)
         application.applicant = user
         
         
@@ -105,13 +106,13 @@ class ApplicationDAO:
         
         application = ApplicationModel.find_by_id(application_id)
         
-        if application in user.donating:
-            return {"message": "Already donating to this application"}, 409
-        
         if application.remaining_amount == 0:
             return {"message": "No further amount needed"}, 409
         
-        if amount < (application.remaining_amount) * (25/100):
+        if application in user.donating:
+            return {"message": "Already donating to this application"}, 409
+        
+        if amount < (application.remaining_amount) * (25/100) and donating_full_amount != True:
             return {"message": "Donote at least 25% of amount"}, 409
         
         if donating_full_amount:

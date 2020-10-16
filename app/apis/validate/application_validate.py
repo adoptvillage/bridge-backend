@@ -37,5 +37,7 @@ def validate_application_submit_data(data: Dict[str, str]):
         return {'message': "Please add fee structure"}, 400
     if "bank_statement" not in data:
         return {'message': "Please add bank statement"}, 400
+    if "description" not in data:
+        return {'message': "Please add description"}, 400
 
     
