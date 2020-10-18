@@ -255,3 +255,27 @@ class UserDAO:
         role = "donor" if user.is_donor else "recipient" if user.is_recipient else "moderator"
         
         return {"message": role}, 200
+    
+    @staticmethod
+    def get_dashboard(firebase_id: str):
+        try:
+            user = UserModel.find_by_firebase_id(firebase_id)
+        except Exception as e:
+            return messages.CANNOT_FIND_USER, 400
+        
+        role = 0 if user.is_donor else 1 if user.is_recipient else 2
+        status = "Donating" if user.is_donor else "Submitted" if user.is_recipient else "Moderating"
+            
+        applications = user.moderating if user.is_moderator else user.donating if user.is_donor else user.application
+
+        application_list = list()
+        
+        for application in applications:
+            application_list.append(application.json())
+        
+        print(application_list)
+        
+        
+        return { "status": status,
+                "role": role, 
+            "applications": application_list }, 200

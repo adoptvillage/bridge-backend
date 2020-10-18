@@ -199,7 +199,7 @@ class UserDashboard(Resource):
         decoded_token = auth.verify_id_token(token)
         uid = decoded_token['uid']
         
-        dsahboard_response = UserDAO.dashboard(uid)
+        dsahboard_response = UserDAO.get_dashboard(uid)
         
         return dsahboard_response
         
