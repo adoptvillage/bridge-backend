@@ -112,8 +112,8 @@ class ApplicationDAO:
         if application in user.donating:
             return {"message": "Already donating to this application"}, 409
         
-        if amount < (application.remaining_amount) * (25/100) and donating_full_amount != True:
-            return {"message": "Donote at least 25% of amount"}, 409
+        # if amount < (application.remaining_amount) * (25/100) and donating_full_amount != True:
+        #     return {"message": "Donote at least 25% of amount"}, 409
         
         if donating_full_amount:
             application.remaining_amount = 0
