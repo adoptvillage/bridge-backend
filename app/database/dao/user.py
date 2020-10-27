@@ -271,9 +271,11 @@ class UserDAO:
         application_list = list()
         
         for application in applications:
-            application_list.append(application.json())
-        
-        print(application_list)
+            for application_donor in application.donor:
+                application_data = application.json()
+                application_data["donor_id"] = application_donor.firebase_id
+                application_data["recipient_id"] = application.applicant.firebase_id
+                application_list.append(application_data)
         
         
         return { "status": status,
