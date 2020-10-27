@@ -264,7 +264,6 @@ class UserDAO:
             return messages.CANNOT_FIND_USER, 400
         
         role = 0 if user.is_donor else 1 if user.is_recipient else 2
-        status = "Donating" if user.is_donor else "Submitted" if user.is_recipient else "Moderating"
             
         applications = user.moderating if user.is_moderator else user.donating if user.is_donor else user.application
 
@@ -275,9 +274,10 @@ class UserDAO:
                 application_data = application.json()
                 application_data["donor_id"] = application_donor.firebase_id
                 application_data["recipient_id"] = application.applicant.firebase_id
+                status = 1 if not application.verified else 2
+                application_data["status"] = status
                 application_list.append(application_data)
         
         
-        return { "status": status,
-                "role": role, 
+        return {"role": role, 
             "applications": application_list }, 200
