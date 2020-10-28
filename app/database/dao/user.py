@@ -270,11 +270,14 @@ class UserDAO:
         application_list = list()
         
         for application in applications:
-            for application_donor in application.donor:
+            for index in range(0,len(application.donor)):
                 application_data = application.json()
-                application_data["donor_id"] = application_donor.firebase_id
+                application_data["donor_id"] = application.donor[index].firebase_id
                 application_data["recipient_id"] = application.applicant.firebase_id
                 status = 1 if not application.verified else 2
+                application_data["donor_name"] = application.donor[index].name
+                application_data["moderator_id"] = application.moderator[index].firebase_id
+                application_data["moderator_name"] = application.moderator[index].name if application.moderator[index].name != "" else "Yet to accept Invite"
                 application_data["status"] = status
                 application_list.append(application_data)
         
