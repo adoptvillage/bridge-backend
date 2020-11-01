@@ -87,6 +87,11 @@ class ApplicationModel(db.Model):
         self.description = description
         
     def json(self):
+        
+        for document in self.documents:
+            offer_letter = document.offer_letter
+            fee_structure = document.fee_structure
+            bank_statement = document.bank_statement
         return {
             "id": self.id,
             "applicant_first_name": self.applicant_first_name,
@@ -100,7 +105,10 @@ class ApplicationModel(db.Model):
             "no_of_donors": self.no_of_donors,
             "description": self.description,
             "institute_state": self.insittute.state,
-            "institute_district": self.insittute.district
+            "institute_district": self.insittute.district,
+            "offer_letter": offer_letter,
+            "fee_structure": fee_structure,
+            "bank_statement": bank_statement
         }
     @classmethod
     def find_by_moderator_email(cls, moderator_email: str) -> 'ApplicationModel':
