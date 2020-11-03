@@ -224,5 +224,13 @@ class ApplicationDAO:
         for app in applications:
             all_applications.append(app.json())
         return all_applications, 200
+    
+    @staticmethod
+    def list_application_with_args(state: str, district: str, sub_district: str, area: str):
+        applications = ApplicationModel.query.filter_by(state=state, district=district, sub_district=sub_district, area=area)
+        all_applications = []
+        for app in applications:
+            all_applications.append(app.json())
+        return all_applications, 200
             
         
