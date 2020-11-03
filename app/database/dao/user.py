@@ -266,9 +266,51 @@ class UserDAO:
             return messages.CANNOT_FIND_USER, 400
         
         role = 0 if user.is_donor else 1 if user.is_recipient else 2
-          
+        reserved_applications = list()
         if user.is_donor:
+            reserved_applications = user.reserved_as_donor
+        elif user.is_moderator:
+            reserved_applications = Ruser.reserved_as_moderator
+        else:
+            applications = user.application
             
+            for app in applications:
+                reserved_applications = app.reserved
+        
+        
+        application_list = list()
+        for reserved in reserved_applications:
+            if reserved.is_active:
+                application = ApplicationModel.find_by_id(reserved.application_id)
+                application_data = application.json()
+                application_data.pop("remaining_amount")
+                application_data["donor_id"] = reserved.donor.firebase_id
+                application_data["recipient_id"] = application.applicant.firebase_id
+                application_data["donor_name"] = reserved.donor.name
+                application_data["moderator_id"] = reserved.moderator.firebase_id
+                application_data["moderator_name"] = reserved.moderator.name if reserved.moderator.name != "" else "Yet to accept Invite"
+                status = 1 if not reserved.verified else 2
+                application_data["status"] = status
+                application_data["reserved_application_id"] = reserved.id
+                application_data["donating_amount"] = reserved.amount
+                application_list.append(application_data)
+            
+        
+        return {"role": role, 
+            "applications": application_list }, 200
+        
+    @staticmethod
+    def get_histroy(firebase_id: str):
+        try:
+            user = UserModel.find_by_firebase_id(firebase_id)
+        except Exception as e:
+            return messages.CANNOT_FIND_USER, 400
+        
+        role = 0 if user.is_donor else 1 if user.is_recipient else 2
+        
+        reserved_applications = list()
+        
+        if user.is_donor:
             reserved_applications = user.reserved_as_donor
         elif user.is_moderator:
             reserved_applications = Ruser.reserved_as_moderator
@@ -280,20 +322,16 @@ class UserDAO:
                 
         application_list = list()
         for reserved in reserved_applications:
-            application = ApplicationModel.find_by_id(reserved.application_id)
-            application_data = application.json()
-            application_data.pop("remaining_amount")
-            application_data["donor_id"] = reserved.donor.firebase_id
-            application_data["recipient_id"] = application.applicant.firebase_id
-            application_data["donor_name"] = reserved.donor.name
-            application_data["moderator_id"] = reserved.moderator.firebase_id
-            application_data["moderator_name"] = reserved.moderator.name if reserved.moderator.name != "" else "Yet to accept Invite"
-            status = 1 if not reserved.verified else 2
-            application_data["status"] = status
-            application_data["reserved_application_id"] = reserved.id
-            application_data["donating_amount"] = reserved.amount
-            application_list.append(application_data)
-        
-        
+            if reserved.is_active == False:
+                application = ApplicationModel.find_by_id(reserved.application_id)
+                application_data = application.json()
+                history_application = dict()
+                history_application["recipient_name"] = application_data["applicant_first_name"] + " " + application_data["applicant_last_name"]
+                history_application["moderator_name"] = reserved.moderator.name
+                history_application["donor_name"] = reserved.donor.name
+                history_application["amount"] = reserved.amount
+                history_application["donation_date"] = reserved.donation_date
+                application_list.append(history_application)
+                
         return {"role": role, 
-            "applications": application_list }, 200
+            "history": application_list }, 200
