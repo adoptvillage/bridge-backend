@@ -199,11 +199,24 @@ class UserDashboard(Resource):
         decoded_token = auth.verify_id_token(token)
         uid = decoded_token['uid']
         
-        dsahboard_response = UserDAO.get_dashboard(uid)
+        dashboard_response = UserDAO.get_dashboard(uid)
         
-        return dsahboard_response
+        return dashboard_response
         
+@user_ns.route('/history')
+class UserDashboard(Resource):
+    
+    @user_ns.doc(params={'authorization': {'in': 'header', 'description': 'An authorization token'}})
+    @token_required
+    def get(self):
         
+        token = request.headers['authorization']
+        decoded_token = auth.verify_id_token(token)
+        uid = decoded_token['uid']
+        
+        history_response = UserDAO.get_histroy(uid)
+        
+        return history_response
     
 # @user_ns.route('/resetpassword')
 # class ResetPassword(Resource):

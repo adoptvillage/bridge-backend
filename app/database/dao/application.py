@@ -162,8 +162,8 @@ class ApplicationDAO:
         except Exception as e:
             return messages.CANNOT_FIND_USER, 400
         
-        if not user.is_moderator:
-            return {"message": "This user cannot mark the application as verified"}, 200
+        if user.is_recipient:
+            return {"message": "Only moderator or donor can verify the application"}, 200
         
         application = ReservedApplicationModel.find_by_id(reserved_application_id)
         
@@ -186,6 +186,10 @@ class ApplicationDAO:
             return {"message": "This user cannot donate"}, 200
         
         application = ReservedApplicationModel.find_by_id(reserved_application_id)
+        
+        if not application.verified:
+            return {"message": "Please verify the application first"}, 200
+        
         
         if application:
             application.donation_date = str(date.today())
