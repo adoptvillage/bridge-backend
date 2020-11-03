@@ -270,7 +270,7 @@ class UserDAO:
         if user.is_donor:
             reserved_applications = user.reserved_as_donor
         elif user.is_moderator:
-            reserved_applications = Ruser.reserved_as_moderator
+            reserved_applications = user.reserved_as_moderator
         else:
             applications = user.application
             
@@ -313,7 +313,7 @@ class UserDAO:
         if user.is_donor:
             reserved_applications = user.reserved_as_donor
         elif user.is_moderator:
-            reserved_applications = Ruser.reserved_as_moderator
+            reserved_applications = user.reserved_as_moderator
         else:
             applications = user.application
             
