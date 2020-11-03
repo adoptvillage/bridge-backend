@@ -1,6 +1,7 @@
 from flask import request, Response
 from app.database.models.user import UserModel
 from app.database.models.application import ApplicationModel
+from app.database.models.reserved_application import ReservedApplicationModel
 from app.database.models.documents import DocumentsModel
 from app.database.models.invites import InvitesModel
 from app.database.models.institution import InstitutionModel
@@ -15,6 +16,7 @@ from app.database.sqlalchemy_extension import db
 from app.database.models.preferred_location import PreferredLocationModel
 from app.utils.email_utils import send_invite_mod_email
 import random
+from datetime import date, timedelta
 
 
 class ApplicationDAO:
@@ -105,24 +107,19 @@ class ApplicationDAO:
         moderator_email = data["moderator_email"]
         
         application = ApplicationModel.find_by_id(application_id)
-        
         if application.remaining_amount == 0:
             return {"message": "No further amount needed"}, 409
         
         if application in user.donating:
             return {"message": "Already donating to this application"}, 409
         
-        # if amount < (application.remaining_amount) * (25/100) and donating_full_amount != True:
-        #     return {"message": "Donote at least 25% of amount"}, 409
+        application.donor.append(user)
+        application.no_of_donors = application.no_of_donors + 1
         
         if donating_full_amount:
             application.remaining_amount = 0
         else:
             application.remaining_amount = application.remaining_amount - amount
-        
-        application.donor.append(user)
-        application.no_of_donors = application.no_of_donors + 1
-        
         
         ''' Find existing moderator '''
         moderator = UserModel.find_by_email(moderator_email.lower())
@@ -132,6 +129,8 @@ class ApplicationDAO:
                 application.moderator.append(moderator)
                 application.moderator_email = moderator.email
                 application.save_to_db()
+                reserved = ReservedApplicationModel(application= application, donor=user, moderator=moderator, is_active=True, verified=False, amount=amount)
+                reserved.save_to_db()
                 if moderator.firebase_id == "":
                     return {"message": "Application accepted. Moderator is already invited, please ask moderator to register by code given earlier."}, 200
                 else:
@@ -143,6 +142,8 @@ class ApplicationDAO:
             temp_mod_user = UserModel("","",moderator_email.lower(), "",2)
             temp_mod_user.save_to_db()
             application.moderator.append(temp_mod_user)
+            reserved = ReservedApplicationModel(application= application, donor=user, moderator=temp_mod_user, is_active=True, verified=False, amount=amount)
+            reserved.save_to_db()
             application.save_to_db()
             ''' Send invite to moderator '''
             invite_code = random.randint(111111,999999)
@@ -151,10 +152,66 @@ class ApplicationDAO:
             send_invite_mod_email(user.name, invite_code, moderator_email)
             
             return {"message": "Application accepted. Waiting for moderator to accept the inivite"}, 200
-            
-        
         return {"message": "Application accepted"}, 200
     
+    
+    @staticmethod
+    def verify_application(firebase_id: str, reserved_application_id: int):
+        try:
+            user = UserModel.find_by_firebase_id(firebase_id)
+        except Exception as e:
+            return messages.CANNOT_FIND_USER, 400
+        
+        if not user.is_moderator:
+            return {"message": "This user cannot mark the application as verified"}, 200
+        
+        application = ReservedApplicationModel.find_by_id(reserved_application_id)
+        
+        if application:
+            application.verified = True
+            application.verification_date = str(date.today())
+            application.save_to_db()
+            return {"message": "Application is now verified"}, 200
+        else:
+            return {"message": "Cannot find reserved application"}, 404
+        
+    @staticmethod
+    def donate_application(firebase_id: str, reserved_application_id: int):
+        try:
+            user = UserModel.find_by_firebase_id(firebase_id)
+        except Exception as e:
+            return messages.CANNOT_FIND_USER, 400
+        
+        if not user.is_donor:
+            return {"message": "This user cannot donate"}, 200
+        
+        application = ReservedApplicationModel.find_by_id(reserved_application_id)
+        
+        if application:
+            application.donation_date = str(date.today())
+            application.save_to_db()
+            return {"message": "Thanks for your donation"}, 200
+        else:
+            return {"message": "Cannot find reserved application"}, 404
+        
+    @staticmethod
+    def close_application(firebase_id: str, reserved_application_id: int):
+        try:
+            user = UserModel.find_by_firebase_id(firebase_id)
+        except Exception as e:
+            return messages.CANNOT_FIND_USER, 400
+        
+        if not user.is_donor:
+            return {"message": "This user cannot close the application"}, 200
+        
+        application = ReservedApplicationModel.find_by_id(reserved_application_id)
+        
+        if application:
+            application.is_active = False
+            application.save_to_db()
+            return {"message": "Application is closed"}, 200
+        else:
+            return {"message": "Cannot find reserved application"}, 404
     
     @staticmethod
     def list_application():
