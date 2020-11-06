@@ -3,6 +3,8 @@ from flask_restplus import fields, Model
 def add_models_to_namespace(api_namespace):
     api_namespace.models[application_submit_model.name] = application_submit_model
     api_namespace.models[application_accept_model.name] = application_accept_model
+    api_namespace.models[application_filter_model.name] = application_filter_model
+    
     
 application_submit_model = Model(
     "Submit Application",
@@ -57,5 +59,15 @@ application_accept_model = Model(
         "donating_full_amount": fields.Boolean(required=True, description="Whether or not donating full amount"),
         "amount": fields.Integer(required=True, description="Amount to be donated"),
         "moderator_email": fields.String(required=True, description="Moderator email address")
+    }
+)
+
+application_filter_model = Model(
+    "Filter Application",
+    {   
+        "state": fields.String(required=True, description="State"),
+        "district": fields.String(required=True, description="District"),
+        "sub_district": fields.String(required=True, description="Sub District"),
+        "area": fields.String(required=True, description="Area")
     }
 )

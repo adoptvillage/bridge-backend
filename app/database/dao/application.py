@@ -210,12 +210,19 @@ class ApplicationDAO:
         
         application = ReservedApplicationModel.find_by_id(reserved_application_id)
         
-        if application:
-            application.is_active = False
-            application.save_to_db()
-            return {"message": "Application is closed"}, 200
+        if application and application.donor == user:
+            if application.donation_date == None:
+                original_applcation = ApplicationModel.find_by_id(application.application_id)
+                original_applcation.remaining_amount = original_applcation.remaining_amount + application.amount
+                original_applcation.save_to_db()
+                application.delete_from_db()
+                return {"message": "Application is removed and updated"}, 200
+            else:
+                application.is_active = False
+                application.save_to_db()
+                return {"message": "Application is closed"}, 200
         else:
-            return {"message": "Cannot find reserved application"}, 404
+            return {"message": "Cannot find reserved application for this user"}, 404
     
     @staticmethod
     def list_application():

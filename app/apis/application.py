@@ -132,18 +132,15 @@ class AcceptApplication(Resource):
 class AcceptApplication(Resource):
     
     @app_ns.doc(params={'authorization': {'in': 'header', 'description': 'An authorization token'}})
-    @app_ns.doc(params={'state': 'State of application'})
-    @app_ns.doc(params={'district': 'District of application'})
-    @app_ns.doc(params={'sub_district': 'Sub District of application'})
-    @app_ns.doc(params={'area': 'Area of application'})
+    @app_ns.expect(application_filter_model)
     @token_required
-    def get(self):
-        args = request.args
+    def post(self):
+        data = request.json
         
-        state = args.get("state")
-        district = args.get("district") if args.get("district") else ""
-        sub_district = args.get("sub_district") if args.get("sub_district") else ""
-        area = args.get("area") if args.get("area") else ""
+        state = data["state"]
+        district = data["district"] if data["district"] else ""
+        sub_district = data["sub_district"] if data["sub_district"] else ""
+        area = data["area"] if data["area"] else ""
         
         list_application_response = ApplicationDAO.list_application_with_args(state, district, sub_district, area)
         
