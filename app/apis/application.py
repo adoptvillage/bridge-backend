@@ -141,7 +141,7 @@ class AcceptApplication(Resource):
         args = request.args
         
         state = args.get("state")
-        district = args.get("district")
+        district = args.get("district") if args.get("district") else ""
         sub_district = args.get("sub_district") if args.get("sub_district") else ""
         area = args.get("area") if args.get("area") else ""
         
