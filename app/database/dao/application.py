@@ -227,7 +227,15 @@ class ApplicationDAO:
     
     @staticmethod
     def list_application_with_args(state: str, district: str, sub_district: str, area: str):
-        applications = ApplicationModel.query.filter_by(state=state, district=district, sub_district=sub_district, area=area)
+        if district != "" and sub_district == "" and area == "":
+           applications = ApplicationModel.query.filter_by(state=state, district=district)          
+        elif sub_district != "" and area == "":
+            applications = ApplicationModel.query.filter_by(state=state, district=district, sub_district=sub_district)
+        elif area != "":
+            applications = ApplicationModel.query.filter_by(state=state, district=district, sub_district=sub_district, area=area)
+        else:
+            applications = ApplicationModel.query.filter_by(state=state)
+
         all_applications = []
         for app in applications:
             all_applications.append(app.json())
