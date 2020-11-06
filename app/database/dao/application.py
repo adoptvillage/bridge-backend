@@ -16,7 +16,7 @@ from app.database.sqlalchemy_extension import db
 from app.database.models.preferred_location import PreferredLocationModel
 from app.utils.email_utils import send_invite_mod_email
 import random
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 
 
 class ApplicationDAO:
@@ -220,9 +220,15 @@ class ApplicationDAO:
     @staticmethod
     def list_application():
         applications = ApplicationModel.query.all()
-        all_applications = []
-        for app in applications:
-            all_applications.append(app.json())
+        all_applications = list()
+        for application in applications:
+            exp_date_string = application.expiration_date
+            expiration_date = datetime.strptime(exp_date_string, "%Y-%m-%d").date()
+            if application.is_open:
+                if application.remaining_amount != 0:
+                    if expiration_date > date.today():
+                        all_applications.append(application.json())
+            
         return all_applications, 200
     
     @staticmethod
@@ -237,8 +243,12 @@ class ApplicationDAO:
             applications = ApplicationModel.query.filter_by(state=state)
 
         all_applications = []
-        for app in applications:
-            all_applications.append(app.json())
+        for application in applications:
+            exp_date_string = application.expiration_date
+            expiration_date = datetime.strptime(exp_date_string, "%Y-%m-%d").date()
+            if application.is_open:
+                if application.remaining_amount != 0:
+                    if expiration_date > date.today():
+                        all_applications.append(application.json())
         return all_applications, 200
-            
-        
+
