@@ -335,3 +335,16 @@ class UserDAO:
                 
         return {"role": role, 
             "history": application_list }, 200
+        
+    @staticmethod
+    def update_profile_image(firebase_id: str, image_url: str):
+        
+        try:
+            user = UserModel.find_by_firebase_id(firebase_id)
+        except Exception as e:
+            return messages.CANNOT_FIND_USER, 400
+        
+        user.profile_image = image_url
+        user.save_to_db()
+        
+        return {"message": "Image updated successfully"}, 200

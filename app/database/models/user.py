@@ -62,6 +62,7 @@ class UserModel(db.Model):
                 "is_donor": self.is_donor,
                 "is_recipient": self.is_recipient,
                 "is_moderator": self.is_moderator,
+                "profile_image": self.profile_image
             }
             
     

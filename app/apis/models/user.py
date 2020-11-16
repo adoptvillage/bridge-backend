@@ -8,6 +8,7 @@ def add_models_to_namespace(api_namespace):
     api_namespace.models[update_profile_body.name] = update_profile_body
     api_namespace.models[update_preferred_location_body.name] = update_preferred_location_body
     api_namespace.models[preferred_location_body.name] = preferred_location_body
+    api_namespace.models[profile_image_update.name] = profile_image_update
 
 
 
@@ -123,5 +124,12 @@ preferred_location_body = Model(
             required=False, description="Selected area"
         ),
         
+    }
+)
+
+profile_image_update = Model(
+    "Update profile image of a user",
+    {   
+        "image_url": fields.String(required=True, description="Image of a user")
     }
 )
