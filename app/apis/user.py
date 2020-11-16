@@ -107,6 +107,35 @@ class UserProfile(Resource):
         
         return user_updated_response
 
+@user_ns.route("/profile/image")
+class UserProfile(Resource):
+    
+    @user_ns.doc(params={'authorization': {'in': 'header', 'description': 'An authorization token'}})
+    @user_ns.expect(200, "Profile Image Url", profile_image_update)
+    @user_ns.response(400, "%s\n%s\n%s\n%s" % (
+        messages.TOKEN_EXPIRED,
+        messages.TOKEN_INVALID,
+        messages.TOKEN_REVOKED,
+        {"message": "Image updated successfully"}
+    ),
+    )
+    @token_required
+    def put(self):
+        data = request.json
+        token = request.headers['authorization']
+        
+        decoded_token = auth.verify_id_token(token)
+        uid = decoded_token['uid']
+        
+        try:
+            update_image_response = UserDAO.update_profile_image(uid,data["image_url"])
+        except Exception as e:
+            return {"message": str(e)}, 400
+        
+        return update_image_response
+        
+
+
 @user_ns.route('/preferredlocation')
 class UserUpdateLocation(Resource):
     
