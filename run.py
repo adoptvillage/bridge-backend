@@ -1,6 +1,5 @@
 from flask import Flask
 import app
-from config import get_env_config
 import firebase_admin
 from firebase_admin import credentials, firestore
 from flask_sqlalchemy import SQLAlchemy
