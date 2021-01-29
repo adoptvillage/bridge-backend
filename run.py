@@ -37,7 +37,7 @@ def create_app() -> Flask:
     db.init_app(app)
     
     
-    cred = credentials.Certificate('firebase_credentials.json')
+    cred = credentials.Certificate('google-credentials.json')
     firebase_admin.initialize_app(cred)
     
     from app.apis import api
