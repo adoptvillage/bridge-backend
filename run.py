@@ -11,14 +11,13 @@ from dotenv import load_dotenv, find_dotenv
 from os import environ
 from flask_mail import Mail
  
-
-
-def create_app(config_filename: str) -> Flask:
+ 
+def create_app() -> Flask:
     
     app = Flask(__name__)
     
     # app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///local_data1.db"
-    app.config['SQLALCHEMY_DATABASE_URI'] = "postgres://vzickxcv:g41uZicGDbvPcoQX_xoQVnztvkL0jL7o@john.db.elephantsql.com:5432/vzickxcv"
+    app.config['SQLALCHEMY_DATABASE_URI'] = environ.get('DB_URI')
 
     app.url_map.strict_slashes = False
     
@@ -37,15 +36,7 @@ def create_app(config_filename: str) -> Flask:
     
     from app.database.sqlalchemy_extension import db
     db.init_app(app)
-    # config = {
-    #     "apiKey": os.getenv("API_KEY"),
-    #     "authDomain": "bridge-3f39b.firebaseapp.com",
-    #     "databaseURL": "https://bridge-3f39b.firebaseio.com",
-    #     "storageBucket": "bridge-3f39b.appspot.com"
-    #     }
     
-    
-    # firebase = pyrebase.initialize_app(config)
     
     cred = credentials.Certificate('firebase_credentials.json')
     firebase_admin.initialize_app(cred)
@@ -57,12 +48,9 @@ def create_app(config_filename: str) -> Flask:
     mail.init_app(app)
     
     
-    # from app.database.firebase import firebase_db
-    # firebase_db = firestore.client()
-    
     return app
 
-application = create_app(get_env_config())
+application = create_app()
 
 
 @application.before_first_request
