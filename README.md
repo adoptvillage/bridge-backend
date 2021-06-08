@@ -10,3 +10,13 @@ pip install -r requirements.txt
 
 python run.py
 ```
+
+### iOS Repo
+
+https://github.com/adoptvillage/bridge-ios
+
+
+### Android Repo
+
+https://github.com/adoptvillage/bridge-android
+
